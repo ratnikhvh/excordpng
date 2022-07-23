@@ -1,0 +1,302 @@
+local function damagemarker_render()
+    --local lp = entity_list.get_local_player()
+    --if not lp then return end
+    if not damage_marker:get() then return end
+    local realtime = global_vars.real_time()
+    local frametime = global_vars.frame_time()
+    for i=1, #shot_data do
+        local shot = shot_data[i]
+        if shot.draw then
+        if shot.position.z >= shot.target then
+            shot.alpha = shot.alpha - 1
+        end
+        if shot.alpha <= 0 then
+            shot.draw = false
+        end
+        if shot.remains == 0 then
+            color = color_t(155, 200, 21)
+        else
+            color = damagecol:get()
+        end
+        local wts = render.world_to_screen(shot.position)
+        if wts ~= nil then
+        render.push_alpha_modifier(shot.alpha/255)
+        render.text(verdana, tostring(shot.damage), wts, color)
+        render.pop_alpha_modifier()
+        end
+        end
+        shot.position.z = shot.position.z + 150 * frametime
+        end
+    --[[for k, v in ipairs(array) do
+        v.position.z = v.position.z + 50 * frametime
+        if v.position.z >= v.target then
+            v.alpha = v.alpha - 1
+        end
+        if v.alpha <= 0 then
+            table.remove(array, k)
+        end
+        render.push_alpha_modifier(v.alpha/255)
+        if v.remains <= 0 then
+            color = color_t(155, 200, 21)
+        else
+            color = damagecol:get()
+        end
+        local pos = render.world_to_screen(v.position)
+        if pos ~= nil then
+        render.text(verdana, tostring(v.damage), vec2_t(pos.x,pos.y), color)
+        end
+        render.pop_alpha_modifier()]]
+
+end
+local function ts()
+local rnd = client.random_int(1,2)
+local ar_c = arrow_col:get()
+local ar_b = arrow_col1:get()
+if arrow:get() == 2 then
+local lp = entity_list.get_local_player()
+if lp then
+if antiaim.get_manual_override() == 1 then
+render.polygon({vec2_t(screen_size.x/2 + 43, screen_size.y/2 + 9), vec2_t(screen_size.x/2 + 56, screen_size.y/2), vec2_t(screen_size.x/2 + 43, screen_size.y/2 - 9)}, color_t(ar_b.r,ar_b.g,ar_b.b,255))
+render.polygon({vec2_t(screen_size.x/2 - 43, screen_size.y/2 + 9), vec2_t(screen_size.x/2 - 56, screen_size.y/2), vec2_t(screen_size.x/2 - 43, screen_size.y/2 - 9)}, color_t(25,25,25,150))
+elseif antiaim.get_manual_override() == 3 then
+render.polygon({vec2_t(screen_size.x/2 + 43, screen_size.y/2 + 9), vec2_t(screen_size.x/2 + 56, screen_size.y/2), vec2_t(screen_size.x/2 + 43, screen_size.y/2 - 9)}, color_t(25,25,25,150))
+render.polygon({vec2_t(screen_size.x/2 - 43, screen_size.y/2 + 9), vec2_t(screen_size.x/2 - 56, screen_size.y/2), vec2_t(screen_size.x/2 - 43, screen_size.y/2 - 9)}, color_t(ar_b.r,ar_b.g,ar_b.b,255))
+else
+render.polygon({vec2_t(screen_size.x/2 + 43, screen_size.y/2 + 9), vec2_t(screen_size.x/2 + 56, screen_size.y/2), vec2_t(screen_size.x/2 + 43, screen_size.y/2 - 9)}, color_t(25,25,25,150))
+render.polygon({vec2_t(screen_size.x/2 - 43, screen_size.y/2 + 9), vec2_t(screen_size.x/2 - 56, screen_size.y/2), vec2_t(screen_size.x/2 - 43, screen_size.y/2 - 9)}, color_t(25,25,25,150))
+end
+if rnd == 1 then
+render.rect_filled(vec2_t(screen_size.x/2 - 42, screen_size.y/2 - 9), vec2_t(2, 18), color_t(25,25,25,150))
+render.rect_filled(vec2_t(screen_size.x/2 + 40, screen_size.y/2 - 9), vec2_t(2, 18), color_t(ar_c.r,ar_c.g,ar_c.b,255))
+else
+render.rect_filled(vec2_t(screen_size.x/2 - 42, screen_size.y/2 - 9), vec2_t(2, 18), color_t(ar_c.r,ar_c.g,ar_c.b,255))
+render.rect_filled(vec2_t(screen_size.x/2 + 40, screen_size.y/2 - 9), vec2_t(2, 18), color_t(25,25,25,150))
+end
+end
+end
+end
+local function hitlogsrender()
+if logs:get() then
+local y = render.get_screen_size().y - 330
+if #hitlogs > 10 then 
+    table.remove(hitlogs, 1) 
+end
+for i, hitlog in ipairs(hitlogs) do
+        local hlalpha = math.floor(hitlog.alpha)
+        x = render.get_screen_size().x / 2 - render.get_text_size(main_font1, hitlog.text2).x / 2
+        hitlog.x = lerp(hitlog.x, x, 0.3)
+        if hitlog.time + 8 < global_vars.real_time() then
+                hitlog.x = lerp(hitlog.x, x + 1000, 0.01)
+                hitlog.alpha = math.max(0, hitlog.alpha - 15)
+        else
+                hitlog.x = lerp(hitlog.x, x, 0.3)
+                hitlog.alpha = math.min(hitlog.alpha + 3, 255)
+        end
+        if hitlog.time + 8.2 < global_vars.real_time() then 
+            table.remove(hitlogs, i) 
+        end
+        render.push_alpha_modifier(hlalpha/255)
+        MultiColorText(hitlog.text1, hitlog.x, y, 12)
+        render.pop_alpha_modifier()
+        y = y + 10
+end
+end
+end
+local function ad()
+local lp = entity_list.get_local_player()
+if lp then
+local cond = conditions()
+local scoped = entity_list.get_local_player():get_prop("m_bIsScoped")
+local add_y1 = 0
+if scoped == 1 then
+    x_switch = lerp(x_switch, 28,0.4)
+else
+    x_switch = lerp(x_switch, 0,0.4)
+end
+local w5 = render.get_text_size(prediction, 'SOLACE LUA')
+render.pred = function(text, col, col2, col3, col4)
+    local width = render.get_text_size(prediction, text)
+    local alpha = animations:animate(text .. "_Center")
+    render.push_alpha_modifier(alpha)
+    render.text(prediction, text, vec2_t(screen_size.x / 2 - width.x / 2 + 1 + x_switch, screen_size.y / 2 + add_y1 + 41), color_t(col, col2, col3, 255))
+    render.pop_alpha_modifier()
+    add_y1 = add_y1 + 7
+end
+render.pred1 = function(text, col, col2, col3, col4)
+    local width = render.get_text_size(prediction, text)
+    local alpha = animations:animate(text .. "_Center")
+    render.push_alpha_modifier(alpha)
+    render.text(prediction, text, vec2_t(screen_size.x / 2 - width.x / 2 + w5.x/2 + 7, screen_size.y / 2 + add_y1 + 41), color_t(col, col2, col3, 255))
+    render.pop_alpha_modifier()
+    add_y1 = add_y1 + 7
+end
+animations:new_frame()
+local col = highcol:get()
+local w2 = render.get_text_size(prediction, 'SOLACELUA')
+local w3 = render.get_text_size(prediction, 'SOLACE')
+local w4 = render.get_text_size(prediction, 'ALPHA')
+local w1 = render.get_text_size(prediction, cond)
+if indicators:get() == 3 then
+render.text(prediction, 'SOLACE', vec2_t(screen_size.x / 2 + 5, screen_size.y / 2 + 27), color_t(255,255,255, 255))
+render.text(prediction, 'LUA', vec2_t(screen_size.x / 2 + 5 + w3.x + 2, screen_size.y / 2 + 27), color_t(col.r,col.g,col.b, 255))
+local al12 = math.min(math.floor(math.sin((global_vars.real_time() % 3) * 4) * 125 + 200), 255)
+render.push_alpha_modifier(al12)
+render.text(prediction, 'ALPHA', vec2_t(screen_size.x / 2 + 5, screen_size.y / 2 + 34), color_t(col.r,col.g,col.b, 255))
+render.pop_alpha_modifier()
+render.text(prediction, 'ALPHA', vec2_t(screen_size.x / 2 + 5, screen_size.y / 2 + 34), color_t(col.r,col.g,col.b, 50))
+render.text(prediction, cond, vec2_t(screen_size.x / 2 + w5.x/2 + w4.x - 13, screen_size.y / 2 + 34), color_t(255,255,255, 255))
+if isDT[2]:get() then
+if exploits.get_charge() >= 1 then
+render.pred1('DT', 123, 194, 21)
+end
+if exploits.get_charge() < 1 then
+render.pred1('DT', 100, 100, 100)
+end
+end
+if isMD[2]:get() then
+render.pred1('DMG', 200, 200, 255)
+end
+if isHS[2]:get() then
+render.pred1('ONSHOT', 123, 194, 21)
+end
+if isBA[2]:get() then
+render.pred1('BAIM', 255, 0, 0)
+end
+end
+if indicators:get() == 2 then
+if jit == 1 then
+render.text(prediction, 'SOLACE', vec2_t(screen_size.x / 2 - w2.x / 2 + x_switch, screen_size.y / 2 + 27), color_t(255,255,255, 255))
+render.text(prediction, 'LUA', vec2_t(screen_size.x / 2 - w2.x / 2 + w3.x + x_switch, screen_size.y / 2 + 27), color_t(col.r,col.g,col.b, 255))
+render.text(prediction, cond, vec2_t(screen_size.x / 2 - w1.x / 2 + x_switch, screen_size.y / 2 + 34), color_t(col.r,col.g,col.b, 255))
+else
+render.text(prediction, 'SOLACE', vec2_t(screen_size.x / 2 - w2.x / 2 + x_switch, screen_size.y / 2 + 27), color_t(col.r,col.g,col.b, 255))
+render.text(prediction, 'LUA', vec2_t(screen_size.x / 2 - w2.x / 2 + w3.x + x_switch, screen_size.y / 2 + 27), color_t(255,255,255, 255))
+end
+render.text(prediction, cond, vec2_t(screen_size.x / 2 - w1.x / 2 + x_switch, screen_size.y / 2 + 34), color_t(col.r,col.g,col.b, 255))
+if isMD[2]:get() then
+render.pred('DMG', 200, 200, 255)
+end
+if isHS[2]:get() then
+render.pred('ONSHOT', 123, 194, 21)
+end
+if isDT[2]:get() then
+if exploits.get_charge() >= 1 then
+render.pred('DT', 123, 194, 21)
+end
+if exploits.get_charge() < 1 then
+render.pred('DT', 100, 100, 100)
+end
+end
+if isBA[2]:get() == 2 then
+render.pred('BAIM', 255, 0, 0)
+end
+end
+end
+end
+local function menu_first()
+local is_aa     = quest(tabs:get() == 1)
+local is_visual = quest(tabs:get() == 2)
+local is_pl     = quest(tabs:get() == 3)
+breaker:set_visible(antiaim_en:get() and is_aa)
+cfg:set_visible(antiaim_en:get() and selection:get() == 1 and is_aa)
+load:set_visible(antiaim_en:get() and selection:get() == 1 and is_aa)
+states:set_visible(antiaim_en:get() and selection:get() == 1 and is_aa)
+selection:set_visible(antiaim_en:get() and is_aa)
+antiaim_en:set_visible(is_aa)
+arrow:set_visible(is_visual)
+type:set_visible(is_aa and selection:get() == 1 and antiaim_en:get())
+
+
+-- SOLACE BASED
+-- stand
+stand.yawadd_lS:set_visible(antiaim_en:get() and states:get() == 1 and selection:get() == 1 and is_aa and type:get() == 2)
+stand.yawadd_rS:set_visible(antiaim_en:get() and states:get() == 1 and selection:get() == 1 and is_aa and is_aa and type:get() == 2)
+stand.jitter_type:set_visible(antiaim_en:get() and states:get() == 1 and selection:get() == 1 and is_aa and is_aa and type:get() == 2)
+stand.jitter_degree:set_visible(antiaim_en:get() and states:get() == 1 and selection:get() == 1 and is_aa and is_aa and type:get() == 2)
+stand.bodyyaw:set_visible(antiaim_en:get() and states:get() == 1 and selection:get() == 1 and is_aa and is_aa and type:get() == 2)
+--crouch
+crouch.yawadd_lC:set_visible(antiaim_en:get() and states:get() == 2 and selection:get() == 1 and is_aa and is_aa and type:get() == 2)
+crouch.yawadd_rC:set_visible(antiaim_en:get() and states:get() == 2 and selection:get() == 1 and is_aa and is_aa and type:get() == 2)
+crouch.jitter_type:set_visible(antiaim_en:get() and states:get() == 2 and selection:get() == 1 and is_aa and is_aa and type:get() == 2)
+crouch.jitter_degree:set_visible(antiaim_en:get() and states:get() == 2 and selection:get() == 1 and is_aa and is_aa and type:get() == 2)
+crouch.bodyyaw:set_visible(antiaim_en:get() and states:get() == 2 and selection:get() == 1 and is_aa and is_aa and type:get() == 2)
+--jump
+jump.yawadd_lJ:set_visible(antiaim_en:get() and states:get() == 3 and selection:get() == 1 and is_aa and is_aa and type:get() == 2)
+jump.yawadd_rJ:set_visible(antiaim_en:get() and states:get() == 3 and selection:get() == 1 and is_aa and is_aa and type:get() == 2)
+jump.jitter_type:set_visible(antiaim_en:get() and states:get() == 3 and selection:get() == 1 and is_aa and is_aa and type:get() == 2)
+jump.jitter_degree:set_visible(antiaim_en:get() and states:get() == 3 and selection:get() == 1 and is_aa and is_aa and type:get() == 2)
+jump.bodyyaw:set_visible(antiaim_en:get() and states:get() == 3 and selection:get() == 1 and is_aa and is_aa and type:get() == 2)
+--jumpc
+airc.yawadd_lAC:set_visible(antiaim_en:get() and states:get() == 4 and selection:get() == 1 and is_aa and is_aa and type:get() == 2)
+airc.yawadd_rAC:set_visible(antiaim_en:get() and states:get() == 4 and selection:get() == 1 and is_aa and is_aa and type:get() == 2)
+airc.jitter_type:set_visible(antiaim_en:get() and states:get() == 4 and selection:get() == 1 and is_aa and is_aa and type:get() == 2)
+airc.jitter_degree:set_visible(antiaim_en:get() and states:get() == 4 and selection:get() == 1 and is_aa and is_aa and type:get() == 2)
+airc.bodyyaw:set_visible(antiaim_en:get() and states:get() == 4 and selection:get() == 1 and is_aa)
+--move
+move.yawadd_lM:set_visible(antiaim_en:get() and states:get() == 5 and selection:get() == 1 and is_aa and is_aa and type:get() == 2)
+move.yawadd_rM:set_visible(antiaim_en:get() and states:get() == 5 and selection:get() == 1 and is_aa and is_aa and type:get() == 2)
+move.jitter_type:set_visible(antiaim_en:get() and states:get() == 5 and selection:get() == 1 and is_aa and is_aa and type:get() == 2)
+move.jitter_degree:set_visible(antiaim_en:get() and states:get() == 5 and selection:get() == 1 and is_aa and is_aa and type:get() == 2)
+move.bodyyaw:set_visible(antiaim_en:get() and states:get() == 5 and selection:get() == 1 and is_aa and is_aa and type:get() == 2)
+end
+local function menu_second()
+local is_aa     = quest(tabs:get() == 1)
+local is_visual = quest(tabs:get() == 2)
+local is_pl     = quest(tabs:get() == 3)
+-- CHEAT BASED
+-- stand
+c_stand.c_yawadd_lS:set_visible(antiaim_en:get() and states:get() == 1 and selection:get() == 1 and is_aa and type:get() == 1)
+c_stand.c_yawadd_rS:set_visible(antiaim_en:get() and states:get() == 1 and selection:get() == 1 and is_aa and is_aa and type:get() == 1)
+c_stand.c_jitter_type:set_visible(antiaim_en:get() and states:get() == 1 and selection:get() == 1 and is_aa and is_aa and type:get() == 1)
+c_stand.c_jitter_degree:set_visible(antiaim_en:get() and states:get() == 1 and selection:get() == 1 and is_aa and is_aa and type:get() == 1)
+c_stand.c_fakeR:set_visible(antiaim_en:get() and states:get() == 1 and selection:get() == 1 and is_aa and is_aa and type:get() == 1)
+c_stand.c_fakeL:set_visible(antiaim_en:get() and states:get() == 1 and selection:get() == 1 and is_aa and is_aa and type:get() == 1)
+--crouch
+c_crouch.c_yawadd_lC:set_visible(antiaim_en:get() and states:get() == 2 and selection:get() == 1 and is_aa and is_aa and type:get() == 1)
+c_crouch.c_yawadd_rC:set_visible(antiaim_en:get() and states:get() == 2 and selection:get() == 1 and is_aa and is_aa and type:get() == 1)
+c_crouch.c_jitter_type:set_visible(antiaim_en:get() and states:get() == 2 and selection:get() == 1 and is_aa and is_aa and type:get() == 1)
+c_crouch.c_jitter_degree:set_visible(antiaim_en:get() and states:get() == 2 and selection:get() == 1 and is_aa and is_aa and type:get() == 1)
+c_crouch.c_fakeR:set_visible(antiaim_en:get() and states:get() == 2 and selection:get() == 1 and is_aa and is_aa and type:get() == 1)
+c_crouch.c_fakeL:set_visible(antiaim_en:get() and states:get() == 2 and selection:get() == 1 and is_aa and is_aa and type:get() == 1)
+--jump
+c_jump.c_yawadd_lJ:set_visible(antiaim_en:get() and states:get() == 3 and selection:get() == 1 and is_aa and is_aa and type:get() == 1)
+c_jump.c_yawadd_rJ:set_visible(antiaim_en:get() and states:get() == 3 and selection:get() == 1 and is_aa and is_aa and type:get() == 1)
+c_jump.c_jitter_type:set_visible(antiaim_en:get() and states:get() == 3 and selection:get() == 1 and is_aa and is_aa and type:get() == 1)
+c_jump.c_jitter_degree:set_visible(antiaim_en:get() and states:get() == 3 and selection:get() == 1 and is_aa and is_aa and type:get() == 1)
+c_jump.c_fakeR:set_visible(antiaim_en:get() and states:get() == 3 and selection:get() == 1 and is_aa and is_aa and type:get() == 1)
+c_jump.c_fakeL:set_visible(antiaim_en:get() and states:get() == 3 and selection:get() == 1 and is_aa and is_aa and type:get() == 1)
+--jumpc
+c_airc.c_yawadd_lAC:set_visible(antiaim_en:get() and states:get() == 4 and selection:get() == 1 and is_aa and is_aa and type:get() == 1)
+c_airc.c_yawadd_rAC:set_visible(antiaim_en:get() and states:get() == 4 and selection:get() == 1 and is_aa and is_aa and type:get() == 1)
+c_airc.c_jitter_type:set_visible(antiaim_en:get() and states:get() == 4 and selection:get() == 1 and is_aa and is_aa and type:get() == 1)
+c_airc.c_jitter_degree:set_visible(antiaim_en:get() and states:get() == 4 and selection:get() == 1 and is_aa and is_aa and type:get() == 1)
+c_airc.c_fakeR:set_visible(antiaim_en:get() and states:get() == 4 and selection:get() == 1 and is_aa and is_aa and type:get() == 1)
+c_airc.c_fakeL:set_visible(antiaim_en:get() and states:get() == 4 and selection:get() == 1 and is_aa and is_aa and type:get() == 1)
+--move
+c_move.c_yawadd_lM:set_visible(antiaim_en:get() and states:get() == 5 and selection:get() == 1 and is_aa and is_aa and type:get() == 1)
+c_move.c_yawadd_rM:set_visible(antiaim_en:get() and states:get() == 5 and selection:get() == 1 and is_aa and is_aa and type:get() == 1)
+c_move.c_jitter_type:set_visible(antiaim_en:get() and states:get() == 5 and selection:get() == 1 and is_aa and is_aa and type:get() == 1)
+c_move.c_jitter_degree:set_visible(antiaim_en:get() and states:get() == 5 and selection:get() == 1 and is_aa and is_aa and type:get() == 1)
+c_move.c_fakeR:set_visible(antiaim_en:get() and states:get() == 5 and selection:get() == 1 and is_aa and is_aa and type:get() == 1)
+c_move.c_fakeL:set_visible(antiaim_en:get() and states:get() == 5 and selection:get() == 1 and is_aa and is_aa and type:get() == 1)
+
+
+logs:set_visible(is_visual)
+trashtalk:set_visible(is_visual)
+indicators:set_visible(is_visual)
+hitmarker:set_visible(is_visual)
+damage_marker:set_visible(is_visual)
+hitmarkercol:set_visible(is_visual)
+highcol:set_visible(is_visual)
+damagecol:set_visible(is_visual)
+end
+local function draw()
+    ad()
+    damagemarker_render()
+    ts()
+    hitlogsrender()
+    menu_first()
+    menu_second()
+end
+
+callbacks.add(e_callbacks.PAINT, draw)
